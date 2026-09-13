@@ -1,0 +1,57 @@
+#app.app-developer {
+  grid-template-rows: auto 1fr;
+}
+
+.developer {
+  overflow: auto;
+}
+
+.developer section {
+  margin-bottom: 28px;
+}
+
+.developer h2 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+}
+
+.developer p {
+  margin: 0 0 8px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.developer code,
+.developer pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+}
+
+.developer code {
+  color: var(--text);
+}
+
+.developer pre {
+  margin: 12px 0 0;
+  padding: 12px;
+  overflow: auto;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.demo-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin: 12px 0;
+}
+
+.demo-status {
+  margin: 0;
+  color: var(--accent);
+  font-size: 0.875rem;
+}

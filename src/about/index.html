@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>关于 · ai-openui</title>
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+  </head>
+  <body>
+    <div id="app" class="app-about">
+      <header class="topbar">
+        <div class="brand">
+          <h1>关于</h1>
+          <p>ai-openui · 第三条 Vite HTML 入口</p>
+        </div>
+        <div class="topbar-actions">
+          <a class="nav-link" href="/">首页</a>
+          <a class="nav-link" href="/ai-playground/">Playground</a>
+          <a class="nav-link" href="/developer/">组件</a>
+        </div>
+      </header>
+
+      <main class="about">
+        <section>
+          <h2>这个项目</h2>
+          <p>
+            自己实现的本地 Ollama 网页对话，用来学习模型列表、多轮上下文和 NDJSON 流式输出。不是
+            Open WebUI 的封装。
+          </p>
+          <p>本机开发 <code>make run</code>（5173），镜像由 h2o 托管 <code>dist/</code> 并反代 <code>/ollama</code>。</p>
+        </section>
+
+        <section>
+          <h2>Vite 怎样构建多页面</h2>
+          <p>
+            Vite 的打包入口是 <strong>HTML</strong>，不是 JS。每个带
+            <code>&lt;script type="module"&gt;</code> 的 HTML 是一条独立的 Rollup 链。
+          </p>
+          <p>
+            HTML 放在 <code>src/</code>，Vite <code>root</code> 指向该目录，所以
+            <code>/about/</code> 在 <code>make run</code> 时就能打开。但
+            <code>vite build</code> 默认<strong>只打 root 下的 <code>index.html</code></strong>。要把本页打进
+            <code>dist/about/index.html</code>，必须在
+            <code>vite.config.ts</code> 的 <code>build.rollupOptions.input</code> 里同时列出：
+          </p>
+          <pre><code>input: {
+  index: resolve(rootDir, 'src/index.html'),
+  playground: resolve(rootDir, 'src/ai-playground/index.html'),
+  about: resolve(rootDir, 'src/about/index.html'),
+}</code></pre>
+          <p>
+            本页入口是 <code>src/about/about.ts</code>，首页是 <code>src/home/home.ts</code>，对话页是
+            <code>src/ai-playground/ai-playground.ts</code>（<code>/ai-playground/</code>）。各自先
+            <code>import</code> <code>base.css</code>，再引对应 CSS。h2o 的 <code>file.dir</code> 指向
+            <code>dist/</code> 后，<code>/about/</code> 会落到 <code>about/index.html</code>。线上路径没有
+            <code>/src/</code> 前缀。
+          </p>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="./about.ts"></script>
+  </body>
+</html>

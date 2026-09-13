@@ -1,4 +1,7 @@
-access-log: /dev/stdout
+access-log:
+  path: /tmp/h2o-access
+  format: '%{CF-Connecting-IP}i|%{X-Real-IP}i|%{X-Forwarded-For}i|%h|%l %u %t "%r" %s %b %{duration}x "%{Referer}i" "%{User-agent}i"'
+
 error-log: /dev/stderr
 
 listen:
@@ -7,9 +10,32 @@ listen:
 hosts:
   default:
     paths:
+      # /get:
+      #   # 本镜像 h2o 未编 mruby；回显由 127.0.0.1:4174 的 Perl 完成
+      #   proxy.reverse.url: http://127.0.0.1:4174/
+      #   proxy.preserve-host: ON
+      #   proxy.timeout.connect: 2000
+      #   proxy.timeout.first_byte: 2000
+      #   proxy.timeout.io: 5000
+      /whisper:
+        proxy.reverse.url: __WHISPER_BASE_URL__
+        proxy.preserve-host: OFF
+        proxy.timeout.connect: 10000
+        proxy.timeout.first_byte: 600000
+        proxy.timeout.io: 600000
+      /tts:
+        proxy.reverse.url: __TTS_BASE_URL__
+        proxy.preserve-host: OFF
+        proxy.timeout.connect: 10000
+        proxy.timeout.first_byte: 600000
+        proxy.timeout.io: 600000
       /ollama:
         proxy.reverse.url: __OLLAMA_BASE_URL__
         proxy.preserve-host: OFF
+        # 浏览器经域名访问会带 Origin；Ollama 默认只放行 localhost，POST /api/chat 会 403
+        proxy.header.unset:
+          - Origin
+          - Referer
         # h2o 2.3 超时单位是毫秒；Ollama 非流式要等整段生成完才有首字节
         proxy.timeout.connect: 10000
         proxy.timeout.first_byte: 180000

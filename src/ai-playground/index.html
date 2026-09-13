@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ai-playground · ai-openui</title>
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+  </head>
+  <body>
+    <div id="app">
+      <header class="topbar">
+        <div class="brand">
+          <h1>ai-playground</h1>
+          <p>本地 Ollama 网页对话</p>
+        </div>
+        <div class="topbar-actions">
+          <a class="nav-link" href="/">首页</a>
+          <a class="nav-link" href="/about/">关于</a>
+          <a class="nav-link" href="/developer/">组件</a>
+          <div class="model-picker" id="model-picker" aria-busy="true">
+            <span class="model-label" id="model-label">模型</span>
+            <select id="model" class="sr-only" aria-label="选择模型"></select>
+            <div id="model-skeleton" class="model-skeleton" aria-hidden="true"></div>
+            <button
+              type="button"
+              id="model-trigger"
+              hidden
+              aria-haspopup="listbox"
+              aria-expanded="false"
+              aria-labelledby="model-label model-trigger"
+            >
+              选择模型
+            </button>
+            <ul id="model-menu" class="model-menu" hidden role="listbox"></ul>
+          </div>
+          <button id="clear" type="button" style="padding: 6px 10px">清空会话</button>
+        </div>
+      </header>
+
+      <div class="chat-pane">
+        <main id="messages" class="messages" aria-live="polite"></main>
+        <div id="stream-pulse" class="stream-pulse" hidden aria-hidden="true">
+          <span class="stream-pulse-visor">
+            <span class="stream-pulse-mouth"></span>
+          </span>
+        </div>
+      </div>
+
+      <footer class="composer">
+        <p id="status" class="status" hidden></p>
+        <div class="composer-box">
+          <textarea
+            id="input"
+            rows="3"
+            placeholder="输入消息，Enter 发送，Shift+Enter 换行"
+          ></textarea>
+          <div class="composer-bar">
+            <div class="composer-tools">
+              <button
+                type="button"
+                id="record"
+                class="icon-btn"
+                aria-label="按住录音"
+                aria-pressed="false"
+                title="按住录音"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    fill="currentColor"
+                    d="M12 14a3 3 0 0 0 3-3V6a3 3 0 1 0-6 0v5a3 3 0 0 0 3 3Zm5-3a5 5 0 0 1-10 0H5a7 7 0 0 0 6 6.93V21h2v-3.07A7 7 0 0 0 19 11h-2Z"
+                  />
+                </svg>
+              </button>
+              <input
+                id="audio"
+                type="file"
+                accept="audio/*,video/mp4,video/webm"
+                hidden
+              />
+              <button
+                type="button"
+                id="transcribe"
+                class="icon-btn"
+                aria-label="上传音频转写"
+                title="上传音频转写"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path
+                    fill="currentColor"
+                    d="M14 3H6a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9l-6-6Zm1 7V4.5L19.5 10H15ZM8 13h8v2H8v-2Zm0 4h8v2H8v-2Z"
+                  />
+                </svg>
+              </button>
+            </div>
+            <div id="record-clip" class="record-clip" hidden>
+              <span id="record-clip-fill" class="record-clip-fill"></span>
+              <span id="record-clip-time" class="record-clip-time">0:00</span>
+            </div>
+            <div class="composer-submit">
+              <button id="send" type="button">发送</button>
+              <button id="stop" type="button" hidden>停止</button>
+            </div>
+          </div>
+        </div>
+        <p id="usage" class="usage" hidden></p>
+      </footer>
+    </div>
+    <script type="module" src="./ai-playground.ts"></script>
+  </body>
+</html>

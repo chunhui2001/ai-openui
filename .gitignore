@@ -3,3 +3,9 @@ dist
 .npm-cache
 .DS_Store
 *.local
+whisper/.venv
+docs/architecture/*.aux
+docs/architecture/*.log
+docs/architecture/*.xdv
+docs/architecture/*.pdf
+docs/architecture/*.svg

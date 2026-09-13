@@ -1,0 +1,196 @@
+\documentclass[border=12pt]{standalone}
+\usepackage{fontspec}
+\usepackage{xeCJK}
+\usepackage{tikz}
+\usepackage{xcolor}
+
+\setmainfont{Helvetica Neue}
+\setsansfont{Helvetica Neue}
+\setCJKmainfont{Hiragino Sans GB}
+\setCJKsansfont{Hiragino Sans GB}
+\xeCJKsetup{CJKspace=true}
+
+\usetikzlibrary{positioning,fit,calc,arrows.meta,backgrounds}
+
+\definecolor{paper}{HTML}{F7F8FA}
+\definecolor{ink}{HTML}{1F2933}
+\definecolor{muted}{HTML}{5F6B76}
+\definecolor{hair}{HTML}{D5DCE3}
+\definecolor{band}{HTML}{EEF1F5}
+\definecolor{donefill}{HTML}{D7EEE4}
+\definecolor{doneline}{HTML}{2F6F55}
+\definecolor{todofill}{HTML}{F4F6F8}
+\definecolor{todoline}{HTML}{7B8794}
+\definecolor{rail}{HTML}{3D4F61}
+\definecolor{loopfill}{HTML}{E7EEF4}
+\definecolor{loopline}{HTML}{3D4F61}
+\pagecolor{paper}
+
+\newcommand{\modtitle}[2]{%
+  {\fontsize{7.4}{9}\selectfont\bfseries #1}\\[-0.4pt]%
+  {\fontsize{5.7}{7}\selectfont\mdseries\sffamily #2}%
+}
+
+\begin{document}
+\begin{tikzpicture}[
+  x=1cm, y=1cm,
+  >=Stealth,
+  font=\sffamily,
+  every node/.append style={inner sep=0, outer sep=0},
+  done/.style={
+    draw=doneline,
+    fill=donefill,
+    line width=0.75pt,
+    rounded corners=2.4pt,
+    minimum width=2.62cm,
+    minimum height=1.08cm,
+    align=center,
+    text=ink,
+  },
+  todo/.style={
+    draw=todoline,
+    fill=todofill,
+    line width=0.65pt,
+    dashed,
+    dash pattern=on 1.6pt off 1.1pt,
+    rounded corners=2.4pt,
+    minimum width=2.62cm,
+    minimum height=1.08cm,
+    align=center,
+    text=muted,
+  },
+  layerlabel/.style={
+    anchor=west,
+    text=rail,
+    align=left,
+    font=\sffamily\bfseries,
+  },
+  loopnode/.style={
+    draw=loopline,
+    fill=white,
+    line width=0.7pt,
+    rounded corners=2.2pt,
+    minimum width=2.55cm,
+    minimum height=0.78cm,
+    align=center,
+    text=ink,
+    font=\fontsize{7}{8.5}\selectfont\bfseries\sffamily,
+  },
+]
+
+\fill[paper] (-1.15,-1.05) rectangle (20.75,13.75);
+
+% Title
+\node[anchor=west, text=ink, font=\fontsize{13.5}{16}\selectfont\bfseries\sffamily]
+  (title) at (0,12.55) {完整 Agent 架构};
+\node[anchor=west, text=muted, font=\fontsize{8}{10}\selectfont\sffamily]
+  at (5.55,12.52) {Complete Agent Architecture};
+\draw[doneline, line width=1.6pt] (0,12.22) -- (2.35,12.22);
+
+\node[anchor=west, text=muted, font=\fontsize{6.8}{8.5}\selectfont\sffamily]
+  at (0,11.88) {自上而下是交付分层；右侧是一次任务的控制环。实线为已实现，虚线为规划中。};
+
+% Layer bands
+\begin{scope}[on background layer]
+  \fill[band, rounded corners=3.5pt] (-0.15,9.55) rectangle (16.35,11.55);
+  \fill[band, rounded corners=3.5pt] (-0.15,7.55) rectangle (16.35,9.40);
+  \fill[band, rounded corners=3.5pt] (-0.15,4.85) rectangle (16.35,7.40);
+  \fill[band, rounded corners=3.5pt] (-0.15,2.15) rectangle (16.35,4.70);
+  \fill[band, rounded corners=3.5pt] (-0.15,0.05) rectangle (16.35,2.00);
+  \fill[loopfill, rounded corners=3.5pt] (16.60,2.15) rectangle (19.75,11.55);
+\end{scope}
+
+% L1 Experience
+\node[layerlabel, font=\fontsize{6.4}{7.8}\selectfont\sffamily\bfseries] at (0.05,11.28)
+  {\makebox[0.42cm][l]{\color{doneline}01}体验层};
+\node[anchor=west, text=muted, font=\fontsize{5.4}{6.5}\selectfont\sffamily] at (2.15,11.28) {Experience};
+\node[done] (chat) at (2.05,10.28) {\modtitle{Chat UI}{对话界面}};
+\node[done] (voice) at (5.00,10.28) {\modtitle{Voice I/O}{录音 / 朗读}};
+\node[todo] (session) at (7.95,10.28) {\modtitle{Session}{会话持久化}};
+\node[todo] (obs) at (10.90,10.28) {\modtitle{Observability}{追踪 / 评测}};
+\node[todo] (auth) at (13.85,10.28) {\modtitle{Auth}{身份与权限}};
+
+% L2 Runtime
+\node[layerlabel, font=\fontsize{6.4}{7.8}\selectfont\sffamily\bfseries] at (0.05,9.13)
+  {\makebox[0.42cm][l]{\color{todoline}02}运行时};
+\node[anchor=west, text=muted, font=\fontsize{5.4}{6.5}\selectfont\sffamily] at (2.15,9.13) {Agent Runtime};
+\node[todo] (planner) at (2.05,8.20) {\modtitle{Planner}{任务拆解}};
+\node[todo] (router) at (5.00,8.20) {\modtitle{Router}{模型 / 工具路由}};
+\node[todo] (executor) at (7.95,8.20) {\modtitle{Tool Executor}{工具调度}};
+\node[todo] (guard) at (10.90,8.20) {\modtitle{Guardrails}{安全约束}};
+\node[todo] (loop) at (13.85,8.20) {\modtitle{Agent Loop}{规划--执行环}};
+
+% L3 Perception / Reasoning / Actuation
+\node[layerlabel, font=\fontsize{6.4}{7.8}\selectfont\sffamily\bfseries] at (0.05,7.13)
+  {\makebox[0.42cm][l]{\color{doneline}03}能力层};
+\node[anchor=west, text=muted, font=\fontsize{5.4}{6.5}\selectfont\sffamily] at (2.15,7.13) {Perception · Reasoning · Actuation};
+
+\node[anchor=west, text=rail, font=\fontsize{5.8}{7}\selectfont\sffamily\bfseries] at (0.72,6.72) {感知};
+\node[done] (stt) at (2.05,5.85) {\modtitle{STT}{Whisper 转写}};
+\node[todo] (vision) at (5.00,5.85) {\modtitle{Vision}{图像理解}};
+
+\node[anchor=west, text=rail, font=\fontsize{5.8}{7}\selectfont\sffamily\bfseries] at (6.72,6.72) {推理};
+\node[done] (llm) at (7.95,5.85) {\modtitle{LLM}{Ollama Chat}};
+\node[todo] (cot) at (10.90,5.85) {\modtitle{CoT / ReAct}{显式推理轨迹}};
+
+\node[anchor=west, text=rail, font=\fontsize{5.8}{7}\selectfont\sffamily\bfseries] at (12.42,6.72) {执行};
+\node[done] (tts) at (13.85,5.85) {\modtitle{TTS}{语音合成}};
+
+% L4 Memory / Knowledge / Skills
+\node[layerlabel, font=\fontsize{6.4}{7.8}\selectfont\sffamily\bfseries] at (0.05,4.43)
+  {\makebox[0.42cm][l]{\color{todoline}04}状态层};
+\node[anchor=west, text=muted, font=\fontsize{5.4}{6.5}\selectfont\sffamily] at (2.15,4.43) {Memory · Knowledge · Skills};
+
+\node[anchor=west, text=rail, font=\fontsize{5.8}{7}\selectfont\sffamily\bfseries] at (0.72,4.02) {记忆};
+\node[done] (stm) at (2.05,3.15) {\modtitle{STM}{多轮上下文}};
+\node[todo] (ltm) at (5.00,3.15) {\modtitle{LTM}{长期记忆}};
+
+\node[anchor=west, text=rail, font=\fontsize{5.8}{7}\selectfont\sffamily\bfseries] at (6.72,4.02) {知识};
+\node[todo] (rag) at (7.95,3.15) {\modtitle{RAG}{检索增强}};
+\node[todo] (docs) at (10.90,3.15) {\modtitle{Corpus}{文档库}};
+
+\node[anchor=west, text=rail, font=\fontsize{5.8}{7}\selectfont\sffamily\bfseries] at (12.42,4.02) {技能};
+\node[todo] (mcp) at (13.85,3.15) {\modtitle{MCP / Tools}{外部工具}};
+
+% L5 Infrastructure
+\node[layerlabel, font=\fontsize{6.4}{7.8}\selectfont\sffamily\bfseries] at (0.05,1.73)
+  {\makebox[0.42cm][l]{\color{doneline}05}基础设施};
+\node[anchor=west, text=muted, font=\fontsize{5.4}{6.5}\selectfont\sffamily] at (2.55,1.73) {Infrastructure};
+\node[done] (gw) at (2.05,0.75) {\modtitle{Gateway}{Vite / h2o}};
+\node[done] (ollama) at (5.00,0.75) {\modtitle{Ollama}{本地推理}};
+\node[done] (whisper) at (7.95,0.75) {\modtitle{Whisper}{:8173}};
+\node[done] (ttssvc) at (10.90,0.75) {\modtitle{TTS Server}{:8273}};
+\node[done] (models) at (13.85,0.75) {\modtitle{Models}{llama / tiny}};
+
+% Control loop
+\node[anchor=west, text=rail, font=\fontsize{7}{9}\selectfont\sffamily\bfseries]
+  at (16.82,11.18) {控制环};
+\node[anchor=west, text=muted, font=\fontsize{5.4}{6.5}\selectfont\sffamily]
+  at (16.82,10.88) {Control Loop};
+
+\node[loopnode] (lp1) at (18.18,10.15) {感知\,·\,Perceive};
+\node[loopnode] (lp2) at (18.18,8.85) {规划\,·\,Plan};
+\node[loopnode] (lp3) at (18.18,7.55) {行动\,·\,Act};
+\node[loopnode] (lp4) at (18.18,6.25) {观察\,·\,Observe};
+\node[loopnode] (lp5) at (18.18,4.95) {记忆\,·\,Remember};
+
+\draw[->, loopline, line width=0.85pt] (lp1) -- (lp2);
+\draw[->, loopline, line width=0.85pt] (lp2) -- (lp3);
+\draw[->, loopline, line width=0.85pt] (lp3) -- (lp4);
+\draw[->, loopline, line width=0.85pt] (lp4) -- (lp5);
+\draw[->, loopline, line width=0.85pt]
+  (lp5.east) -- ++(0.42,0) |- ($(lp1.east)+(0.42,0)$) -- (lp1.east);
+
+\node[text=muted, align=left, font=\fontsize{5.5}{7}\selectfont\sffamily, text width=2.7cm]
+  at (18.18,3.35) {当前 playground\\只覆盖感知与行动\\中的对话、转写、朗读。};
+
+% Legend
+\node[done, minimum width=0.42cm, minimum height=0.28cm] at (0.28,-0.12) {};
+\node[anchor=west, text=ink, font=\fontsize{6.2}{8}\selectfont\sffamily] at (0.58,-0.12) {已实现};
+\node[todo, minimum width=0.42cm, minimum height=0.28cm] at (2.15,-0.12) {};
+\node[anchor=west, text=ink, font=\fontsize{6.2}{8}\selectfont\sffamily] at (2.45,-0.12) {规划中};
+\node[anchor=west, text=muted, font=\fontsize{6.2}{8}\selectfont\sffamily]
+  at (4.35,-0.12) {ai-openui · 本地 Agent 学习项目};
+
+\end{tikzpicture}
+\end{document}

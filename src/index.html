@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>ai-openui</title>
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+  </head>
+  <body>
+    <div id="app" class="app-home">
+      <header class="topbar">
+        <div class="brand">
+          <h1>ai-openui</h1>
+          <p>完整 Agent 开发蓝图</p>
+        </div>
+        <div class="topbar-actions">
+          <a class="nav-cta" href="/ai-playground/">打开 AI Playground</a>
+          <a class="nav-link" href="/about/">关于</a>
+          <a class="nav-link" href="/developer/">组件</a>
+        </div>
+      </header>
+
+      <main class="home">
+        <p class="home-lead">
+          下图是开发一个完整 Agent 所需的分层与控制环。实线模块是本项目已经跑通的对话循环；虚线是下一步。
+        </p>
+
+        <figure class="home-diagram">
+          <img
+            src="/agent-architecture.svg"
+            alt="完整 Agent 分层架构：体验层、运行时、感知推理执行、记忆知识技能、基础设施，以及 Perceive–Plan–Act–Observe–Remember 控制环"
+          />
+        </figure>
+
+        <ul class="home-legend" aria-label="图例">
+          <li>
+            <span class="swatch swatch-done" aria-hidden="true"></span>
+            已实现：Chat UI、STT、TTS、Ollama
+          </li>
+          <li>
+            <span class="swatch swatch-todo" aria-hidden="true"></span>
+            尚未做：Planner、Tools、Memory、RAG
+          </li>
+        </ul>
+      </main>
+    </div>
+    <script type="module" src="./home/home.ts"></script>
+  </body>
+</html>

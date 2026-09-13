@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>组件 · ai-openui</title>
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+  </head>
+  <body>
+    <div id="app" class="app-developer">
+      <header class="topbar">
+        <div class="brand">
+          <h1>组件</h1>
+          <p>Developer · 用法演示</p>
+        </div>
+        <div class="topbar-actions">
+          <a class="nav-link" href="/">首页</a>
+          <a class="nav-link" href="/ai-playground/">Playground</a>
+          <a class="nav-link" href="/about/">关于</a>
+        </div>
+      </header>
+
+      <main class="developer">
+        <section>
+          <h2>Button · variant</h2>
+          <p>四种外观：<code>primary</code>、<code>secondary</code>（默认）、<code>ghost</code>、<code>danger</code>。</p>
+          <div class="demo-row" id="demo-variants"></div>
+          <pre><code>createButton({ label: '保存', variant: 'primary' })
+createButton({ label: '取消', variant: 'secondary' })
+createButton({ label: '更多', variant: 'ghost' })
+createButton({ label: '删除', variant: 'danger' })</code></pre>
+        </section>
+
+        <section>
+          <h2>Button · size</h2>
+          <p><code>sm</code> 与默认 <code>md</code>。</p>
+          <div class="demo-row" id="demo-sizes"></div>
+          <pre><code>createButton({ label: '小按钮', size: 'sm' })
+createButton({ label: '中按钮', size: 'md' })</code></pre>
+        </section>
+
+        <section>
+          <h2>Button · disabled</h2>
+          <p>禁用后不可点，样式降低透明度。</p>
+          <div class="demo-row" id="demo-disabled"></div>
+          <pre><code>createButton({ label: '不可用', variant: 'primary', disabled: true })</code></pre>
+        </section>
+
+        <section>
+          <h2>Button · onClick</h2>
+          <p>点击计数，确认回调生效。</p>
+          <div class="demo-row" id="demo-click"></div>
+          <p class="demo-status" id="click-status">还没点过</p>
+          <pre><code>createButton({
+  label: '点我',
+  variant: 'primary',
+  onClick: () => { count += 1 },
+})</code></pre>
+        </section>
+
+        <section>
+          <h2>Button · HTML class</h2>
+          <p>不经过工厂函数，也可以直接写 class。</p>
+          <div class="demo-row">
+            <button type="button" class="ui-button ui-button--primary ui-button--md">primary</button>
+            <button type="button" class="ui-button ui-button--secondary ui-button--md">secondary</button>
+            <button type="button" class="ui-button ui-button--ghost ui-button--md">ghost</button>
+            <button type="button" class="ui-button ui-button--danger ui-button--sm">danger sm</button>
+            <button type="button" class="ui-button ui-button--primary ui-button--md" disabled>disabled</button>
+          </div>
+          <pre><code>&lt;button type="button" class="ui-button ui-button--primary ui-button--md"&gt;
+  保存
+&lt;/button&gt;</code></pre>
+        </section>
+      </main>
+    </div>
+    <script type="module" src="./developer.ts"></script>
+  </body>
+</html>

@@ -5,6 +5,8 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .
+ARG ASSETS_HASH=1
+ENV ASSETS_HASH=$ASSETS_HASH
 RUN npm run build
 
 FROM akorn/h2o:latest AS h2o
@@ -36,6 +38,8 @@ COPY --from=h2o /usr/local/bin/h2o /usr/local/bin/h2o
 COPY --from=h2o /usr/local/share/h2o /usr/local/share/h2o
 COPY --from=build /app/dist /var/www/html
 COPY docker/h2o.conf.template /usr/local/etc/h2o.conf.template
+COPY --chmod=755 docker/get-server.pl /usr/local/bin/get-server.pl
+COPY --chmod=755 docker/access-log-filter.pl /usr/local/bin/access-log-filter.pl
 COPY --chmod=755 docker/entrypoint.sh /usr/local/bin/docker-entrypoint.sh
 
 ENV OLLAMA_BASE_URL=http://host.docker.internal:11434
@@ -49,11 +53,11 @@ ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
 # docker buildx inspect --bootstrap
 
 # 一个是“构建并发布到仓库”
-# docker buildx build --platform linux/amd64,linux/arm64 --builder multi-builder -t chunhui2001/debian13:ai-openui -f Dockerfile --push .
+# docker buildx build --build-arg ASSETS_HASH=0 --platform linux/amd64,linux/arm64 --builder multi-builder -t chunhui2001/debian13:ai-openui -f Dockerfile --push .
 
 # 一个是“构建并加载到本地 Docker”
-# docker buildx build --platform linux/arm64 -t chunhui2001/debian13:ai-openui -f Dockerfile --load .
-# docker buildx build --platform linux/amd64 -t chunhui2001/debian13:ai-openui -f Dockerfile --load .
+# docker buildx build --build-arg ASSETS_HASH=0 --platform linux/arm64 -t chunhui2001/debian13:ai-openui -f Dockerfile --load .
+# docker buildx build --build-arg ASSETS_HASH=0 --platform linux/amd64 -t chunhui2001/debian13:ai-openui -f Dockerfile --load .
 
 # docker run -dit --entrypoint="top" --name ai-openui chunhui2001/debian13:ai-openui
 # docker run -dit -p 4173:4173 --add-host=host.docker.internal:host-gateway --name ai-openui chunhui2001/debian13:ai-openui

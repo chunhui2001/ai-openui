@@ -1,18 +1,32 @@
 # 对接宿主机已在跑的 Ollama（容器内不要写 localhost:11434）
+# 需要已有外部网络 br0（172.16.197.0/24）。Ollama .92，Open WebUI .93，本服务 .94。
 # curl -s http://127.0.0.1:11434/api/tags
 # docker compose up -d --build
 # curl -I http://127.0.0.1:4173
+# curl -I http://172.16.197.94:4173
+
+networks:
+  br0:
+    external: true
 
 services:
   ai-openui:
     container_name: ai-openui
     hostname: ai-openui
     image: chunhui2001/debian13:ai-openui
-    build: .
+    build:
+      context: .
+      args:
+        ASSETS_HASH: ${ASSETS_HASH:-1}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     ports:
       - 4173:4173
     environment:
       - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - WHISPER_BASE_URL=http://host.docker.internal:8173
+      - TTS_BASE_URL=http://host.docker.internal:8273
     restart: unless-stopped
+    networks:
+      br0:
+        ipv4_address: 172.16.197.94

@@ -1,0 +1,43 @@
+#app {
+  grid-template-rows: auto 1fr;
+}
+
+.about {
+  overflow: auto;
+}
+
+.about section {
+  margin-bottom: 24px;
+}
+
+.about h2 {
+  margin: 0 0 8px;
+  font-size: 1.05rem;
+}
+
+.about p {
+  margin: 0 0 8px;
+  color: var(--muted);
+  line-height: 1.6;
+}
+
+.about code,
+.about pre {
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.85em;
+}
+
+.about code {
+  color: var(--text);
+}
+
+.about pre {
+  margin: 12px 0;
+  padding: 12px;
+  overflow: auto;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  line-height: 1.5;
+}
