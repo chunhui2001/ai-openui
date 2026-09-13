@@ -1,0 +1,20 @@
+access-log: /dev/stdout
+error-log: /dev/stderr
+
+listen:
+  port: 4173
+
+hosts:
+  default:
+    paths:
+      /ollama:
+        proxy.reverse.url: __OLLAMA_BASE_URL__
+        proxy.preserve-host: OFF
+        # h2o 2.3 超时单位是毫秒；Ollama 非流式要等整段生成完才有首字节
+        proxy.timeout.connect: 10000
+        proxy.timeout.first_byte: 180000
+        proxy.timeout.io: 300000
+      /:
+        file.dir: /var/www/html
+        file.index:
+          - index.html

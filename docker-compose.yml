@@ -1,0 +1,18 @@
+# 对接宿主机已在跑的 Ollama（容器内不要写 localhost:11434）
+# curl -s http://127.0.0.1:11434/api/tags
+# docker compose up -d --build
+# curl -I http://127.0.0.1:4173
+
+services:
+  ai-openui:
+    container_name: ai-openui
+    hostname: ai-openui
+    image: chunhui2001/debian13:ai-openui
+    build: .
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    ports:
+      - 4173:4173
+    environment:
+      - OLLAMA_BASE_URL=http://host.docker.internal:11434
+    restart: unless-stopped
