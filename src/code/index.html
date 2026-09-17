@@ -3,13 +3,21 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Code selection debug</title>
+    <title>Shiki · Code Highlighting</title>
   </head>
   <body>
-    <main class="debug-page">
-      <h1>代码块选择调试</h1>
-      <p>拖动选择代码，观察行号左侧是否出现额外色块。</p>
-      <div id="code-block" class="code-block"></div>
+    <main class="shiki-page">
+      <section class="code-frame" aria-label="代码示例">
+        <div class="code-window">
+          <div class="window-bar" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+          <div id="code-block" class="code-block"></div>
+        </div>
+      </section>
+
     </main>
     <script type="module" src="./code.ts"></script>
   </body>

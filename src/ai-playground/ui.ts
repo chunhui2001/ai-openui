@@ -18,17 +18,20 @@ const tailwindCodeTheme = {
   name: 'tailwind-home',
   type: 'dark' as const,
   colors: {
-    'editor.foreground': '#e2e8f0',
-    'editor.background': '#0f172a',
+    'editor.foreground': '#d4d4d8',
+    'editor.background': '#1f222b',
   },
   tokenColors: [
-    { scope: ['comment', 'punctuation.definition.comment'], settings: { foreground: '#64748b' } },
+    { scope: ['comment', 'punctuation.definition.comment'], settings: { foreground: '#71717a' } },
     {
-      scope: ['keyword', 'storage', 'storage.type', 'storage.modifier'],
-      settings: { foreground: '#c4b5fd' },
-    },
-    {
-      scope: ['entity.name.tag', 'meta.tag.sgml', 'markup.heading'],
+      scope: [
+        'entity.name.tag',
+        'punctuation.definition.tag',
+        'keyword',
+        'storage',
+        'storage.type',
+        'storage.modifier',
+      ],
       settings: { foreground: '#f472b6' },
     },
     {
@@ -37,20 +40,14 @@ const tailwindCodeTheme = {
     },
     {
       scope: ['string', 'constant.other.symbol', 'entity.name.type'],
-      settings: { foreground: '#bef264' },
+      settings: { foreground: '#a5d6ff' },
     },
     {
       scope: ['constant.numeric', 'constant.language', 'variable.language'],
       settings: { foreground: '#f9a8d4' },
     },
-    {
-      scope: ['punctuation', 'meta.brace', 'meta.tag'],
-      settings: { foreground: '#94a3b8' },
-    },
-    {
-      scope: ['variable', 'support.constant', 'support.type'],
-      settings: { foreground: '#a5f3fc' },
-    },
+    { scope: ['punctuation', 'meta.brace', 'meta.tag'], settings: { foreground: '#a1a1aa' } },
+    { scope: ['variable', 'support.constant', 'support.type'], settings: { foreground: '#bae6fd' } },
   ],
 }
 
@@ -138,8 +135,22 @@ function wrapLineContent(pre: HTMLElement): void {
 }
 
 function renderCodeBlock(lang: string, value: string): HTMLElement {
+  const wrapper = document.createElement('div')
+  wrapper.className = 'code-block-wrapper'
+
+  const copy = document.createElement('button')
+  copy.type = 'button'
+  copy.className = 'code-copy'
+  copy.setAttribute('aria-label', '复制代码')
+  copy.title = '复制代码'
+  copy.textContent = '复制'
+  copy.addEventListener('click', () => {
+    void copyCode(value, copy)
+  })
+
   if (!highlighter) {
-    return renderPlainCode(lang, value)
+    wrapper.append(copy, renderPlainCode(lang, value))
+    return wrapper
   }
 
   const wrap = document.createElement('div')
@@ -150,11 +161,42 @@ function renderCodeBlock(lang: string, value: string): HTMLElement {
   })
   const pre = wrap.firstElementChild
   if (!(pre instanceof HTMLElement)) {
-    return renderPlainCode(lang, value)
+    wrapper.append(copy, renderPlainCode(lang, value))
+    return wrapper
   }
 
   wrapLineContent(pre)
-  return pre
+  wrapper.append(copy, pre)
+  return wrapper
+}
+
+async function copyCode(value: string, button: HTMLButtonElement): Promise<void> {
+  try {
+    await navigator.clipboard.writeText(value)
+  } catch {
+    const textarea = document.createElement('textarea')
+    textarea.value = value
+    textarea.setAttribute('readonly', '')
+    textarea.style.position = 'fixed'
+    textarea.style.opacity = '0'
+    document.body.append(textarea)
+    textarea.select()
+
+    if (!document.execCommand('copy')) {
+      textarea.remove()
+      button.textContent = '复制失败'
+      return
+    }
+
+    textarea.remove()
+  }
+
+  button.textContent = '已复制'
+  button.classList.add('is-copied')
+  window.setTimeout(() => {
+    button.textContent = '复制'
+    button.classList.remove('is-copied')
+  }, 1400)
 }
 
 function refreshHighlightedContent(): void {
@@ -575,7 +617,8 @@ function createBubble(message: Message, index: number): HTMLElement {
     fillContent(content, message.content)
     article.append(content)
 
-    if (message.role === 'assistant') {
+    const containsCodeBlock = splitContent(message.content).some((part) => part.type === 'code')
+    if (message.role === 'assistant' && !containsCodeBlock) {
       article.append(createSpeakButton(index))
     }
   }
