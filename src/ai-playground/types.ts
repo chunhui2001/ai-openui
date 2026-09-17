@@ -6,12 +6,25 @@ export type MessageAudio = {
   file: File
 }
 
+export type MessageImage = {
+  file: File
+  url: string
+  base64: string
+}
+
 export type Message = {
   role: Role
   content: string
+  images?: MessageImage[]
   audio?: MessageAudio
   transcript?: string
   transcribing?: boolean
+}
+
+export type OllamaMessage = {
+  role: Role
+  content: string
+  images?: string[]
 }
 
 export type OllamaModel = {

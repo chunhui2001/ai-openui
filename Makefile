@@ -59,13 +59,6 @@ check: install
 models:
 	curl -sS $(OLLAMA_BASE_URL)/api/tags
 
-whisper:
-	@command -v ffmpeg >/dev/null || { echo "先安装 ffmpeg：brew install ffmpeg"; exit 1; }
-	cd $(ROOT_DIR)/whisper && \
-test -d .venv || python3 -m venv .venv && \
-$(WHISPER_VENV)/bin/pip install -r requirements.txt && \
-$(WHISPER_VENV)/bin/python server.py
-
 tts:
 	cd $(ROOT_DIR)/tts && \
 test -d .venv || python3 -m venv .venv && \
@@ -78,3 +71,26 @@ up:
 
 down:
 	cd $(ROOT_DIR) && docker compose down
+
+
+# kill "$(lsof -tiTCP:11434 -sTCP:LISTEN)"
+run-ollama-serve:
+	@if curl -sf "$(OLLAMA_BASE_URL)/api/tags" >/dev/null; then \
+		echo "Ollama already running at $(OLLAMA_BASE_URL)"; \
+	else \
+		echo "Starting Ollama..."; \
+		nohup ollama serve >/tmp/ollama-serve.log 2>&1 & \
+		for i in 1 2 3 4 5 6 7 8 9 10; do \
+			curl -sf "$(OLLAMA_BASE_URL)/api/tags" >/dev/null && break; \
+			sleep 0.5; \
+		done; \
+		curl -sf "$(OLLAMA_BASE_URL)/api/tags" >/dev/null || { echo "Ollama failed to start; see /tmp/ollama-serve.log"; exit 1; }; \
+		echo "Ollama started at $(OLLAMA_BASE_URL)"; \
+	fi
+
+whisper:
+	@command -v ffmpeg >/dev/null || { echo "先安装 ffmpeg：brew install ffmpeg"; exit 1; }
+	cd $(ROOT_DIR)/whisper && \
+test -d .venv || python3 -m venv .venv && \
+$(WHISPER_VENV)/bin/pip install -r requirements.txt && \
+$(WHISPER_VENV)/bin/python server.py

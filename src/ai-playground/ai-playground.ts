@@ -1,5 +1,5 @@
 import { chatStream, listModels, speak, splitSpeakText, transcribe } from './api'
-import type { Message, TokenUsage } from './types'
+import type { Message, MessageImage, TokenUsage } from './types'
 import {
   els,
   fillModels,
@@ -11,6 +11,7 @@ import {
   setTranscribing,
   setRecording,
   setPendingClip,
+  setPendingImages,
   scrollToBottom,
   updateLastAssistant,
   MAX_RECORD_MS,
@@ -30,6 +31,15 @@ let holdingRecord = false
 let recordStartedAt = 0
 let recordTimer: ReturnType<typeof setInterval> | null = null
 let pendingRecord: { file: File; url: string; durationMs: number } | null = null
+type PendingImage = {
+  id: string
+  file: File
+  url: string
+}
+const MAX_IMAGE_COUNT = 3
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024
+const IMAGE_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp'])
+let pendingImages: PendingImage[] = []
 
 async function loadModels(): Promise<void> {
   try {
@@ -81,6 +91,109 @@ function restorePendingClip(): void {
   }
 
   setPendingClip(null)
+}
+
+function imageId(): string {
+  return crypto.randomUUID()
+}
+
+function renderPendingImages(): void {
+  setPendingImages(
+    pendingImages.map((image) => ({
+      id: image.id,
+      name: image.file.name,
+      url: image.url,
+    })),
+  )
+}
+
+function clearPendingImages(): void {
+  for (const image of pendingImages) {
+    URL.revokeObjectURL(image.url)
+  }
+
+  pendingImages = []
+  renderPendingImages()
+}
+
+function revokeMessageImages(): void {
+  for (const message of messages) {
+    for (const image of message.images ?? []) {
+      URL.revokeObjectURL(image.url)
+    }
+  }
+}
+
+function removePendingImage(id: string): void {
+  const index = pendingImages.findIndex((image) => image.id === id)
+
+  if (index === -1) {
+    return
+  }
+
+  const [image] = pendingImages.splice(index, 1)
+  URL.revokeObjectURL(image.url)
+  renderPendingImages()
+}
+
+function addPendingImages(files: FileList): void {
+  const errors: string[] = []
+
+  for (const file of files) {
+    if (pendingImages.length >= MAX_IMAGE_COUNT) {
+      errors.push(`最多可添加 ${MAX_IMAGE_COUNT} 张图片。`)
+      break
+    }
+
+    if (!IMAGE_TYPES.has(file.type)) {
+      errors.push(`${file.name} 不是 PNG、JPEG 或 WebP 图片。`)
+      continue
+    }
+
+    if (file.size > MAX_IMAGE_BYTES) {
+      errors.push(`${file.name} 超过 5 MB。`)
+      continue
+    }
+
+    pendingImages.push({
+      id: imageId(),
+      file,
+      url: URL.createObjectURL(file),
+    })
+  }
+
+  els.image.value = ''
+  renderPendingImages()
+  setStatus(errors.join(' '), errors.length ? 'error' : 'info')
+}
+
+function readImageBase64(file: File): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onerror = () => reject(reader.error ?? new Error('读取图片失败'))
+    reader.onload = () => {
+      const result = reader.result
+
+      if (typeof result !== 'string') {
+        reject(new Error('图片编码失败'))
+        return
+      }
+
+      const separator = result.indexOf(',')
+      resolve(separator === -1 ? result : result.slice(separator + 1))
+    }
+    reader.readAsDataURL(file)
+  })
+}
+
+async function createMessageImages(images: PendingImage[]): Promise<MessageImage[]> {
+  return Promise.all(
+    images.map(async (image) => ({
+      file: image.file,
+      url: image.url,
+      base64: await readImageBase64(image.file),
+    })),
+  )
 }
 
 async function sendRecording(): Promise<void> {
@@ -152,7 +265,7 @@ async function send(): Promise<void> {
 
   const text = els.input.value.trim()
 
-  if (!text) {
+  if (!text && pendingImages.length === 0) {
     return
   }
 
@@ -163,8 +276,25 @@ async function send(): Promise<void> {
     return
   }
 
+  let images: MessageImage[] | undefined
+
+  try {
+    if (pendingImages.length) {
+      images = await createMessageImages(pendingImages)
+    }
+  } catch (error) {
+    setStatus(toErrorMessage(error, '图片读取失败，请重试。'), 'error')
+    return
+  }
+
   els.input.value = ''
-  messages.push({ role: 'user', content: text })
+  pendingImages = []
+  renderPendingImages()
+  messages.push({
+    role: 'user',
+    content: text || '请识别图片中的全部文字和代码。',
+    ...(images ? { images } : {}),
+  })
   messages.push({ role: 'assistant', content: '' })
   renderMessages(messages)
   scrollToBottom()
@@ -518,9 +648,11 @@ function clearChat(): void {
     }
   }
 
+  revokeMessageImages()
   messages = []
   sessionUsage = { prompt: 0, completion: 0 }
   clearPendingRecord()
+  clearPendingImages()
   stopSpeak()
   setStatus('')
   setUsage(null, sessionUsage)
@@ -539,6 +671,21 @@ els.send.addEventListener('click', () => {
 
 els.stop.addEventListener('click', stop)
 els.clear.addEventListener('click', clearChat)
+els.uploadImage.addEventListener('click', () => {
+  els.image.click()
+})
+els.image.addEventListener('change', () => {
+  if (els.image.files?.length) {
+    addPendingImages(els.image.files)
+  }
+})
+els.imagePreview.addEventListener('click', (event) => {
+  const target = event.target instanceof Element ? event.target.closest<HTMLElement>('[data-image-id]') : null
+
+  if (target?.dataset.imageId) {
+    removePendingImage(target.dataset.imageId)
+  }
+})
 els.transcribe.addEventListener('click', () => {
   els.audio.click()
 })

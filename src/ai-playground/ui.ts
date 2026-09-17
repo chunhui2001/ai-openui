@@ -12,8 +12,47 @@ import sql from '@shikijs/langs/sql'
 import typescript from '@shikijs/langs/typescript'
 import xml from '@shikijs/langs/xml'
 import yaml from '@shikijs/langs/yaml'
-import githubDark from '@shikijs/themes/github-dark'
 import type { Message, MessageAudio, TokenUsage } from './types'
+
+const tailwindCodeTheme = {
+  name: 'tailwind-home',
+  type: 'dark' as const,
+  colors: {
+    'editor.foreground': '#e2e8f0',
+    'editor.background': '#0f172a',
+  },
+  tokenColors: [
+    { scope: ['comment', 'punctuation.definition.comment'], settings: { foreground: '#64748b' } },
+    {
+      scope: ['keyword', 'storage', 'storage.type', 'storage.modifier'],
+      settings: { foreground: '#c4b5fd' },
+    },
+    {
+      scope: ['entity.name.tag', 'meta.tag.sgml', 'markup.heading'],
+      settings: { foreground: '#f472b6' },
+    },
+    {
+      scope: ['entity.other.attribute-name', 'entity.name.function', 'support.function'],
+      settings: { foreground: '#7dd3fc' },
+    },
+    {
+      scope: ['string', 'constant.other.symbol', 'entity.name.type'],
+      settings: { foreground: '#bef264' },
+    },
+    {
+      scope: ['constant.numeric', 'constant.language', 'variable.language'],
+      settings: { foreground: '#f9a8d4' },
+    },
+    {
+      scope: ['punctuation', 'meta.brace', 'meta.tag'],
+      settings: { foreground: '#94a3b8' },
+    },
+    {
+      scope: ['variable', 'support.constant', 'support.type'],
+      settings: { foreground: '#a5f3fc' },
+    },
+  ],
+}
 
 const SHIKI_LANGS = [
   'bash',
@@ -46,7 +85,7 @@ type ContentPart = { type: 'text'; value: string } | { type: 'code'; lang: strin
 let highlighter: HighlighterCore | null = null
 
 void createHighlighterCore({
-  themes: [githubDark],
+  themes: [tailwindCodeTheme],
   langs: [bash, css, go, html, javascript, json, python, sql, typescript, xml, yaml],
   engine: createJavaScriptRegexEngine(),
 }).then((ready) => {
@@ -58,15 +97,7 @@ function transformerRenderLineNumber(): ShikiTransformer {
   return {
     name: 'line-numbers',
     line(node, line) {
-      node.children.unshift({
-        type: 'element',
-        tagName: 'span',
-        properties: {
-          class: 'line-number',
-          'aria-hidden': 'true',
-        },
-        children: [{ type: 'text', value: String(line) }],
-      })
+      node.properties['data-line-number'] = String(line)
     },
   }
 }
@@ -85,15 +116,25 @@ function renderPlainCode(lang: string, value: string): HTMLElement {
   for (const [index, line] of lines.entries()) {
     const row = document.createElement('span')
     row.className = 'line'
-    const number = document.createElement('span')
-    number.className = 'line-number'
-    number.setAttribute('aria-hidden', 'true')
-    number.textContent = String(index + 1)
-    row.append(number, document.createTextNode(line || ' '))
+    row.dataset.lineNumber = String(index + 1)
+    const content = document.createElement('span')
+    content.className = 'line-content'
+    content.textContent = line || ' '
+    row.append(content)
     code.append(row)
   }
   pre.append(code)
   return pre
+}
+
+function wrapLineContent(pre: HTMLElement): void {
+  for (const line of pre.querySelectorAll<HTMLElement>('.line')) {
+    line.dataset.lineNumber ||= String([...line.parentElement?.children ?? []].indexOf(line) + 1)
+    const content = document.createElement('span')
+    content.className = 'line-content'
+    content.append(...line.childNodes)
+    line.append(content)
+  }
 }
 
 function renderCodeBlock(lang: string, value: string): HTMLElement {
@@ -104,11 +145,16 @@ function renderCodeBlock(lang: string, value: string): HTMLElement {
   const wrap = document.createElement('div')
   wrap.innerHTML = highlighter.codeToHtml(value, {
     lang,
-    theme: 'github-dark',
+    theme: 'tailwind-home',
     transformers: [transformerRenderLineNumber()],
   })
   const pre = wrap.firstElementChild
-  return pre instanceof HTMLElement ? pre : renderPlainCode(lang, value)
+  if (!(pre instanceof HTMLElement)) {
+    return renderPlainCode(lang, value)
+  }
+
+  wrapLineContent(pre)
+  return pre
 }
 
 function refreshHighlightedContent(): void {
@@ -201,6 +247,9 @@ export const els = {
   input: $<HTMLTextAreaElement>('input'),
   send: $<HTMLButtonElement>('send'),
   stop: $<HTMLButtonElement>('stop'),
+  image: $<HTMLInputElement>('image'),
+  uploadImage: $<HTMLButtonElement>('upload-image'),
+  imagePreview: $('image-preview'),
   audio: $<HTMLInputElement>('audio'),
   transcribe: $<HTMLButtonElement>('transcribe'),
   record: $<HTMLButtonElement>('record'),
@@ -310,6 +359,8 @@ export function setGenerating(generating: boolean): void {
   els.model.disabled = generating
   els.modelTrigger.disabled = generating
   els.clear.disabled = generating
+  els.uploadImage.disabled = generating
+  els.image.disabled = generating
   els.transcribe.disabled = generating
   els.record.disabled = generating
   els.streamPulse.hidden = !generating
@@ -323,6 +374,8 @@ export function setTranscribing(busy: boolean): void {
   els.transcribe.disabled = busy
   els.send.disabled = busy
   els.audio.disabled = busy
+  els.uploadImage.disabled = busy
+  els.image.disabled = busy
   els.record.disabled = busy
 }
 
@@ -335,6 +388,41 @@ export function setRecording(recording: boolean): void {
   els.send.disabled = recording
   els.transcribe.disabled = recording
   els.audio.disabled = recording
+  els.uploadImage.disabled = recording
+  els.image.disabled = recording
+}
+
+export type ImagePreview = {
+  id: string
+  name: string
+  url: string
+}
+
+export function setPendingImages(images: ImagePreview[]): void {
+  els.imagePreview.replaceChildren()
+
+  for (const image of images) {
+    const item = document.createElement('figure')
+    item.className = 'image-preview-item'
+
+    const thumbnail = document.createElement('img')
+    thumbnail.src = image.url
+    thumbnail.alt = image.name
+
+    const remove = document.createElement('button')
+    remove.type = 'button'
+    remove.className = 'image-preview-remove'
+    remove.dataset.imageId = image.id
+    remove.setAttribute('aria-label', `移除图片：${image.name}`)
+    remove.title = '移除图片'
+    remove.textContent = '×'
+
+    const name = document.createElement('figcaption')
+    name.textContent = image.name
+
+    item.append(thumbnail, remove, name)
+    els.imagePreview.append(item)
+  }
 }
 
 function setModelValue(name: string): void {
@@ -429,6 +517,26 @@ function createBubble(message: Message, index: number): HTMLElement {
   role.className = 'role'
   role.textContent = message.role === 'user' ? '你' : '助手'
   article.append(role)
+
+  if (message.images?.length) {
+    const images = document.createElement('div')
+    images.className = 'message-images'
+
+    for (const image of message.images) {
+      const link = document.createElement('a')
+      link.href = image.url
+      link.target = '_blank'
+      link.rel = 'noreferrer'
+
+      const thumbnail = document.createElement('img')
+      thumbnail.src = image.url
+      thumbnail.alt = '用户上传的图片'
+      images.append(link)
+      link.append(thumbnail)
+    }
+
+    article.append(images)
+  }
 
   if (message.audio) {
     if (message.content) {

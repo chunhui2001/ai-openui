@@ -54,8 +54,21 @@
             rows="3"
             placeholder="输入消息，Enter 发送，Shift+Enter 换行"
           ></textarea>
+          <div id="image-preview" class="image-preview" aria-live="polite"></div>
           <div class="composer-bar">
             <div class="composer-tools">
+              <input id="image" type="file" accept="image/png,image/jpeg,image/webp" multiple hidden />
+              <button
+                type="button"
+                id="upload-image"
+                class="icon-btn"
+                aria-label="上传图片"
+                title="上传图片"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path fill="currentColor" d="M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2ZM5 5h14v9.17l-3.2-3.2a1 1 0 0 0-1.42 0L10 15.34l-1.7-1.7a1 1 0 0 0-1.42 0L5 15.58V5Zm0 14v-.59l2.41-2.41 1.7 1.7a1 1 0 0 0 1.42 0l4.59-4.59L19 17.17V19H5Z" />
+                </svg>
+              </button>
               <button
                 type="button"
                 id="record"

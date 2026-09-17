@@ -1,0 +1,68 @@
+@import '../base.css';
+
+.debug-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 32px;
+}
+
+.debug-page h1 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.debug-page p {
+  margin: 8px 0 20px;
+  color: var(--muted);
+}
+
+.code-block pre.shiki {
+  overflow: auto;
+  margin: 0;
+  padding: 0.8rem 1rem 0.8rem 0;
+  border: 1px solid #1e293b;
+  background: #0f172a !important;
+  color: #e2e8f0;
+  font-family: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 0.8rem;
+  line-height: 1;
+}
+
+.code-block pre.shiki code {
+  display: block;
+}
+
+.code-block pre.shiki .line {
+  position: relative;
+  display: block;
+  min-height: 1em;
+  margin-right: -1rem;
+  padding: 0.625em 1rem 0.625em 0;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.code-block pre.shiki .line-content {
+  display: block;
+  margin-left: 3.75em;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.code-block pre.shiki .line::before {
+  position: absolute;
+  top: 0.625em;
+  left: 0;
+  width: 2.75em;
+  color: #475569;
+  content: attr(data-line-number);
+  text-align: right;
+  user-select: none;
+  -webkit-user-select: none;
+  pointer-events: none;
+}
+
+.code-block pre.shiki *::selection {
+  background: transparent;
+  color: inherit;
+}

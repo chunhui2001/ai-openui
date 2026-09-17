@@ -1,4 +1,4 @@
-import type { ChatChunk, Message, TagsResponse, TokenUsage } from './types'
+import type { ChatChunk, Message, OllamaMessage, TagsResponse, TokenUsage } from './types'
 
 export function usageFromChunk(chunk: ChatChunk): TokenUsage | null {
   const prompt = chunk.prompt_eval_count
@@ -15,6 +15,14 @@ export function usageFromChunk(chunk: ChatChunk): TokenUsage | null {
 }
 
 const OLLAMA = '/ollama'
+
+function toOllamaMessages(messages: Message[]): OllamaMessage[] {
+  return messages.map(({ role, content, images }) => ({
+    role,
+    content,
+    ...(images?.length ? { images: images.map((image) => image.base64) } : {}),
+  }))
+}
 
 async function readError(res: Response): Promise<string> {
   try {
@@ -116,7 +124,7 @@ export async function chatOnce(model: string, messages: Message[]): Promise<stri
   const res = await fetch(`${OLLAMA}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model, messages, stream: false }),
+    body: JSON.stringify({ model, messages: toOllamaMessages(messages), stream: false }),
   })
 
   if (!res.ok) {
@@ -141,7 +149,7 @@ export async function chatStream(
   const res = await fetch(`${OLLAMA}/api/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ model, messages, stream: true }),
+    body: JSON.stringify({ model, messages: toOllamaMessages(messages), stream: true }),
     signal,
   })
 
