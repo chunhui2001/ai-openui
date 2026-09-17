@@ -1,4 +1,3 @@
-import '../base.css'
 import './developer.css'
 import { createButton } from '../components/button'
 

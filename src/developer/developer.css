@@ -1,3 +1,5 @@
+@import '../base.css';
+
 #app.app-developer {
   grid-template-rows: auto 1fr;
 }

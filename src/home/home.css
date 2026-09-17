@@ -1,3 +1,5 @@
+@import '../base.css';
+
 #app.app-home {
   max-width: 1120px;
   grid-template-rows: auto 1fr;

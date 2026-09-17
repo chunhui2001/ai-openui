@@ -17,7 +17,6 @@ import {
   MAX_RECORD_MS,
 } from './ui'
 
-import '../base.css'
 import './ai-playground.css'
 
 let messages: Message[] = []
