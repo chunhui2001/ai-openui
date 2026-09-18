@@ -25,8 +25,16 @@
           下图是开发一个完整 Agent 所需的分层与控制环。实线模块是本项目已经跑通的对话循环；虚线是下一步。
         </p>
 
-        <figure class="home-diagram">
+        <figure class="home-diagram" aria-busy="true">
+          <div class="diagram-skeleton" aria-hidden="true"></div>
           <img
+            class="diagram-preview"
+            src="/agent-architecture-preview.webp"
+            alt=""
+            aria-hidden="true"
+          />
+          <img
+            class="diagram-full"
             src="/agent-architecture.svg"
             alt="完整 Agent 分层架构：体验层、运行时、感知推理执行、记忆知识技能、基础设施，以及 Perceive–Plan–Act–Observe–Remember 控制环"
           />

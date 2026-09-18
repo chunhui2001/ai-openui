@@ -66,10 +66,10 @@ $(TTS_VENV)/bin/pip install -r requirements.txt && \
 $(TTS_VENV)/bin/python server.py
 
 up:
-	@#cd $(ROOT_DIR) && $(if $(ASSETS_HASH),ASSETS_HASH=$(ASSETS_HASH) )docker compose up -d --build
-	cd $(ROOT_DIR) && \
-	docker compose build --no-cache && \
-	docker compose up -d --force-recreate
+	cd $(ROOT_DIR) && $(if $(ASSETS_HASH),ASSETS_HASH=$(ASSETS_HASH) )docker compose up -d --build
+	# cd $(ROOT_DIR) && \
+	# docker compose build --no-cache && \
+	# docker compose up -d --force-recreate
 	docker logs -f ai-openui
 
 down:
