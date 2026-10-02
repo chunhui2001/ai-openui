@@ -59,12 +59,6 @@ check: install
 models:
 	curl -sS $(OLLAMA_BASE_URL)/api/tags
 
-tts:
-	cd $(ROOT_DIR)/tts && \
-test -d .venv || python3 -m venv .venv && \
-$(TTS_VENV)/bin/pip install -r requirements.txt && \
-$(TTS_VENV)/bin/python server.py
-
 up:
 	cd $(ROOT_DIR) && $(if $(ASSETS_HASH),ASSETS_HASH=$(ASSETS_HASH) )docker compose up -d --build
 	# cd $(ROOT_DIR) && \
@@ -90,6 +84,12 @@ run-ollama-serve:
 		curl -sf "$(OLLAMA_BASE_URL)/api/tags" >/dev/null || { echo "Ollama failed to start; see /tmp/ollama-serve.log"; exit 1; }; \
 		echo "Ollama started at $(OLLAMA_BASE_URL)"; \
 	fi
+
+tts:
+	cd $(ROOT_DIR)/tts && \
+test -d .venv || python3 -m venv .venv && \
+$(TTS_VENV)/bin/pip install -r requirements.txt && \
+$(TTS_VENV)/bin/python server.py
 
 whisper:
 	@command -v ffmpeg >/dev/null || { echo "先安装 ffmpeg：brew install ffmpeg"; exit 1; }

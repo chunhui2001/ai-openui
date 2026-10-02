@@ -98,6 +98,7 @@ def iter_results(
     max_tokens: int,
 ) -> Iterable[object]:
     custom = getattr(model, 'generate_custom_voice', None)
+
     if is_qwen3() and callable(custom):
         results = custom(
             text=text,
@@ -106,9 +107,11 @@ def iter_results(
             instruct=instruct or None,
             max_tokens=max_tokens,
         )
+
         return results if isinstance(results, Iterable) else (results,)
 
     generate = getattr(model, 'generate', None)
+
     if not callable(generate):
         raise RuntimeError('TTS 模型没有 generate 方法')
 
@@ -118,6 +121,7 @@ def iter_results(
         speed=speed,
         lang_code=lang_for_voice(voice),
     )
+
     return results if isinstance(results, Iterable) else (results,)
 
 
@@ -147,8 +151,10 @@ def synthesize(text: str, voice: str, speed: float, instruct: str) -> bytes:
 
     waveform = np.concatenate(chunks)
     peak = float(np.max(np.abs(waveform))) if waveform.size else 0.0
+
     if peak > 1e-6:
         waveform = waveform * (0.9 / peak)
+
     np.clip(waveform, -1.0, 1.0, out=waveform)
     duration = waveform.size / sample_rate if sample_rate else 0.0
     print(f'[tts] wave sr={sample_rate} dur={duration:.2f}s peak={peak:.3f}')
@@ -157,12 +163,14 @@ def synthesize(text: str, voice: str, speed: float, instruct: str) -> bytes:
     sf.write(buffer, waveform, sample_rate, format='WAV', subtype='PCM_16')
     wav = buffer.getvalue()
     print(f'[tts] speak done {time.perf_counter() - started:.1f}s bytes={len(wav)}')
+
     return wav
 
 
 def warmup() -> None:
     print(f'[tts] warmup {WARMUP_TEXT!r}')
     started = time.perf_counter()
+
     try:
         synthesize(WARMUP_TEXT, DEFAULT_VOICE, 1.0, DEFAULT_INSTRUCT)
         print(f'[tts] warmup done {time.perf_counter() - started:.1f}s')
@@ -204,6 +212,7 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         length = int(self.headers.get('Content-Length') or '0')
+
         if length <= 0:
             self.send_json(400, {'error': '缺少 JSON 正文'})
             return
@@ -223,21 +232,24 @@ class Handler(BaseHTTPRequestHandler):
             return
 
         text = payload.get('text')
+
         if not isinstance(text, str) or not text.strip():
             self.send_json(400, {'error': '缺少 text'})
             return
 
         text = clip_text(text.strip())
-
         voice = payload.get('voice')
+
         if not isinstance(voice, str) or not voice.strip():
             voice = DEFAULT_VOICE
 
         speed = payload.get('speed', 1.0)
+
         if not isinstance(speed, (int, float)) or speed <= 0:
             speed = 1.0
 
         instruct = payload.get('instruct')
+        
         if not isinstance(instruct, str) or not instruct.strip():
             instruct = DEFAULT_INSTRUCT
 

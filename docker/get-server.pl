@@ -45,6 +45,7 @@ sub handle {
     my %headers;
     my @lines = split /\r?\n/, $request;
     shift @lines;
+    
     for my $line (@lines) {
         last if $line eq '';
         next unless $line =~ /^([^:]+):\s*(.*)$/;
